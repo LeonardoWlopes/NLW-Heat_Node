@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 
 interface IPayload {
@@ -6,30 +6,31 @@ interface IPayload {
 }
 
 export function ensureAuthenticated(
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
 ) {
-  const authToken = req.headers.authorization;
+  const authToken = request.headers.authorization;
 
   if (!authToken) {
-    return res.status(401).json({
+    return response.status(401).json({
       errorCode: "token.invalid",
     });
   }
+
+  //Bearer 8934589345djisdjfk834u25ndsfksdkf
+  // [0] Bearer
+  // [1] 8934589345djisdjfk834u25ndsfksdkf
 
   const [, token] = authToken.split(" ");
 
   try {
     const { sub } = verify(token, process.env.JWT_SECRET) as IPayload;
 
-    req.user_id = sub;
+    request.user_id = sub;
 
     return next();
-  } catch (error) {
-    return res.status(401).json({
-      erroCode: "token.expired",
-      error: error,
-    });
+  } catch (err) {
+    return response.status(401).json({ errorCode: "token.expired" });
   }
 }

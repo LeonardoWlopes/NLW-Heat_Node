@@ -1,11 +1,11 @@
-import { io } from "../app";
 import prismaClient from "../prisma";
+import { io } from "../app";
 
 class CreateMessageService {
-  async execute(msg: string, user_id: string) {
+  async execute(text: string, user_id: string) {
     const message = await prismaClient.message.create({
       data: {
-        text: msg,
+        text,
         user_id,
       },
       include: {
@@ -13,7 +13,7 @@ class CreateMessageService {
       },
     });
 
-    const infoWs = {
+    const infoWS = {
       text: message.text,
       user_id: message.user_id,
       created_at: message.created_at,
@@ -23,9 +23,8 @@ class CreateMessageService {
       },
     };
 
-    io.emit("new_message", infoWs);
+    io.emit("new_message", infoWS);
 
-    console.log("New message by", message.user.name);
     return message;
   }
 }
